@@ -39,3 +39,4 @@ build/
 
 ## Mongo Ignores ###
 /CloudToMongo*/
+CloudtoMongo.ini
