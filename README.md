@@ -20,3 +20,11 @@ https://mosquitto.org/download/
     `Shift + Alt + '-'` (Not the NUMPAD -)
 - To adjust terminal window size:
   `Shift + Alt + Arrow Key`
+
+# Python Instructions
+- Install a fresh venv for the project scope (python 3.11 or below)
+- run the command below to install the dependencies
+```shell
+pip install -r requirements.txt
+```
+- Mark the python folder as sources!!
