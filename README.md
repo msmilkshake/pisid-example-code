@@ -28,3 +28,17 @@ https://mosquitto.org/download/
 pip install -r requirements.txt
 ```
 - Mark the python folder as sources!!
+
+# MySQL Instructions
+- To Reset the db Password you can use the following command in phpmyadmin SQL console:
+```SQL
+SET PASSWORD FOR 'root'@'localhost' = PASSWORD('your_root_password');
+```
+**WARNING**
+You will lose access to the phpmyadmin dashboard
+
+To fix this look for the file `config.inc.php` located in `C:\xampp\phpMyAdmin` and edit
+the line `$cfg['Servers'][$i]['password'] = 'your_root_password';`
+
+
+- Verify the [WriteMysql.ini](WriteMysql.ini) for the db configuration
