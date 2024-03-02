@@ -8,6 +8,11 @@ from datetime import datetime
 import paho.mqtt.client as mqtt
 
 
+host = "broker.mqtt-dashboard.com"
+port = 1883
+topic = "pisid_mazemov_14"
+
+
 # Mouse Movements
 def mouseMove():
     global totalmousefinished
@@ -32,7 +37,7 @@ def on_disconnectMqttRoom(client, userdata, rc):
         print("Unexpected MQTT disconnection. Will auto-reconnect")
     clientMqttRoom.on_connect = on_connectMqttRoom
     clientMqttRoom.on_disconnect = on_disconnectMqttRoom
-    clientMqttRoom.connect('localhost', 1883)
+    clientMqttRoom.connect(host, port)
 
 
 def on_connectMqttRoom(client, userdata, flags, rc):
@@ -43,7 +48,7 @@ def sendMqttRoom(currentRoom, nextRoomToGo):
     jsonString = "{Hora:\"" + str(datetime.now()) + "\", SalaOrigem:" + str(currentRoom) + ", SalaDestino:" + str(
         nextRoomToGo) + "}"
     try:
-        clientMqttRoom.publish("test_topic", jsonString, qos=0)
+        clientMqttRoom.publish(topic, jsonString, qos=0)
         time.sleep(1)
         clientMqttRoom.loop()
         print(jsonString)
@@ -55,7 +60,7 @@ def sendMqttRoom(currentRoom, nextRoomToGo):
 clientMqttRoom = mqtt.Client(client_id="clientIDRoom")
 clientMqttRoom.on_connect = on_connectMqttRoom
 clientMqttRoom.on_disconnect = on_disconnectMqttRoom
-clientMqttRoom.connect('localhost', 1883)
+clientMqttRoom.connect(host, port)
 
 numberMouses = 5
 numberRooms = 4
@@ -67,7 +72,7 @@ while True:
     totalmousefinished = 0
     mousesMoving = []
     counter = 0
-    clientMqttRoom.publish("test_topic", "{Hora:\"2000-01-01 00:00:00\", SalaOrigem:0, SalaDestino:0}", qos=0)
+    clientMqttRoom.publish(topic, "{Hora:\"2000-01-01 00:00:00\", SalaOrigem:0, SalaDestino:0}", qos=0)
     mousesstarted = 0
     flag = True
     i = 0
