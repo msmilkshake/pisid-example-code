@@ -1,16 +1,24 @@
 package sql;
 
 import com.mongodb.MongoClient;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import javax.swing.*;
 import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
-import java.util.Properties;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class WriteSensorsToSQL {
 
@@ -30,6 +38,8 @@ public class WriteSensorsToSQL {
     MongoCollection<Document> movsCollection;
     MongoCollection<Document> tempsCollection;
 
+    MongoCursor<Document> cursor;
+
     public void run() {
         try {
             Properties p = new Properties();
@@ -47,11 +57,16 @@ public class WriteSensorsToSQL {
             System.out.println("Error reading WriteMysql.ini file " + e);
             JOptionPane.showMessageDialog(null, "The WriteMysql inifile wasn't found.", "Data Migration", JOptionPane.ERROR_MESSAGE);
         }
-        connectDatabase_to();
-        ReadData();
+        connectDatabases();
+        
+        try {
+            ReadData();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void connectDatabase_to() {
+    public void connectDatabases() {
         try {
             Class.forName("org.mariadb.jdbc.Driver");
             connTo = DriverManager.getConnection(sql_database_connection_to, sql_database_user_to, sql_database_password_to);
@@ -65,21 +80,64 @@ public class WriteSensorsToSQL {
     }
 
 
-    public void ReadData() {
+    public void ReadData() throws InterruptedException {
+        
+        LocalDateTime timestamp = LocalDateTime.now();
 
-
-
-
-
-
-//        String doc = new String();
-//        int i = 0;
-//        while (i < 100) {
-//            doc = "{Name:\"Nome_" + i + "\", Location:\"Portugal\", id:" + i + "}";
-//            //WriteToMySQL(com.mongodb.util.JSON.serialize(doc));
-//            WriteToMySQL(doc);
-//            i++;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            Date timestamp2;
+        try {
+            timestamp2 = dateFormat.parse("2024-03-04T23:11:11.757332100Z");
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
         }
+        System.out.println(timestamp2);
+
+        while (true) {
+            String ts = timestamp.toString() + "Z";
+            System.out.println("Timestamp now: " + timestamp);
+
+            Document testQuery = Document.parse("{q: [" +
+                    "{ $addFields: { timestamp: { $dateFromString: {dateString: \"$Hora\" } } } }," +
+                    "{ $match: { timestamp: { $gte: ISODate('2024-03-04T23:11:11.757332100Z') } } }," +
+                    "{ $project: {_id: 1, Timestamp: \"$timestamp\", SalaDestino: 1, SalaOrigem: 1 } }" +
+                    "]}"
+            );
+
+            List<Document> aggregateQuery = new ArrayList<>();
+            aggregateQuery.add(Document.parse("{ $addFields: { timestamp: { $dateFromString: {dateString: \"$Hora\" } } } }"));
+            aggregateQuery.add(Document.parse("{ $match: { timestamp: { $gte: ISODate('2024-03-04T23:11:11.757332100Z') } } }"));
+            aggregateQuery.add(Document.parse("{ $project: {_id: 1, Timestamp: \"$timestamp\", SalaDestino: 1, SalaOrigem: 1 } }"));
+
+            List<Bson> aggregateQuery2 = new ArrayList<>();
+            aggregateQuery2.add(Document.parse("{ $addFields: { timestamp: { $dateFromString: {dateString: \"$Hora\" } } } }"));
+            aggregateQuery2.add(Aggregates.match(Filters.gte("timestamp", "2024-03-04T23:11:11.757332100Z")));
+            aggregateQuery2.add(Document.parse("{ $project: {_id: 1, Timestamp: \"$timestamp\", SalaDestino: 1, SalaOrigem: 1 } }"));
+
+            AggregateIterable<Document> result = movsCollection.aggregate(aggregateQuery);
+            // MongoCursor<Document> cursor2 = movsCollection.find().iterator();
+            for (Document doc : result) {
+                System.out.println(doc.toJson());
+            }
+            Document doc = null;
+            while (cursor.hasNext()) {
+                Document doc2 = cursor.next();
+                System.out.println(doc2);
+            }
+            if (doc != null) {
+                timestamp = LocalDateTime.parse(doc.get("Timestamp").toString());
+            }
+            
+            Thread.sleep(5000);
+        }
+        //        String doc = new String();
+        //        int i = 0;
+        //        while (i < 100) {
+        //            doc = "{Name:\"Nome_" + i + "\", Location:\"Portugal\", id:" + i + "}";
+        //            //WriteToMySQL(com.mongodb.util.JSON.serialize(doc));
+        //            WriteToMySQL(doc);
+        //            i++;
     }
 
     public void WriteToMySQL(String c) {
@@ -103,7 +161,7 @@ public class WriteSensorsToSQL {
         }
         fields = fields.replace("\"", "");
         SqlCommando = "Insert into " + sql_table_to + " (" + fields.substring(1, fields.length()) + ") values (" + values.substring(0, values.length() - 1) + ");";
-        //System.out.println(SqlCommando);
+        // System.out.println(SqlCommando);
         try {
         } catch (Exception e) {
             System.out.println(e);
@@ -120,7 +178,14 @@ public class WriteSensorsToSQL {
 
 
     public static void main(String[] args) {
+        // new WriteSensorsToSQL().tests();
         new WriteSensorsToSQL().run();
     }
 
+    public void tests() {
+        LocalDateTime timestamp = LocalDateTime.now();
+        System.out.println(timestamp);
+    }
+
 }
+

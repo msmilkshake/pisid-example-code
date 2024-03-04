@@ -8,12 +8,16 @@ import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonValue;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class AggregationExample {
 
@@ -25,7 +29,7 @@ public class AggregationExample {
         MongoDatabase database = mongoClient.getDatabase("mqtt");
 
         // Get reference to your collection
-        MongoCollection<Document> collection = database.getCollection("test");
+        MongoCollection<Document> collection = database.getCollection("movs");
 
         // Define the query
         //Document query = new Document("SalaDestino", new Document("$ne", null));
@@ -38,22 +42,32 @@ public class AggregationExample {
         // Iterate over the results
         while (cursor.hasNext()) {
             Document doc = cursor.next();
-            System.out.println(doc.toJson());
+            // System.out.println(doc.toJson());
         }
 
-        BsonArray query3 = BsonArray.parse("[\n" +
+        // BsonArray query3 = BsonArray.parse("[\n" +
+        //         "    { $group: { _id: \"$SalaDestino\", Count: { $sum: 1 } } },\n" +
+        //         "    { $match: { _id: 3} },\n" +
+        //         "    { $project: { SalaDestino: \"$_id\", Count: \"$Count\", _id: 0} }\n" +
+        //         "]");
+        
+        Document testQuery = Document.parse("{q: [\n" +
                 "    { $group: { _id: \"$SalaDestino\", Count: { $sum: 1 } } },\n" +
                 "    { $match: { _id: 3} },\n" +
                 "    { $project: { SalaDestino: \"$_id\", Count: \"$Count\", _id: 0} }\n" +
-                "]");
-
-
+                "]}");
+        
+        // List<BsonValue> l1 = new ArrayList<>(query3);
+        
+        // Alternativa com Lista:
         List<Document> aggregateQuery = new ArrayList<>();
         aggregateQuery.add(Document.parse("{ $group: { _id: \"$SalaDestino\", Count: { $sum: 1 } } }"));
         aggregateQuery.add(Document.parse("{ $match: { _id: 3} }"));
         aggregateQuery.add(Document.parse("{ $project: { SalaDestino: \"$_id\", Count: \"$Count\", _id: 0} }"));
+        
+        
         // Perform the query
-        cursor = collection.aggregate(aggregateQuery).iterator();
+        cursor = collection.aggregate((List<? extends Bson>) testQuery.get("q")).iterator();
 
         // Iterate over the results
         while (cursor.hasNext()) {
