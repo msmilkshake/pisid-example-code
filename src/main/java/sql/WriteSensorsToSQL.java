@@ -82,53 +82,31 @@ public class WriteSensorsToSQL {
 
     public void ReadData() throws InterruptedException {
         
-        LocalDateTime timestamp = LocalDateTime.now();
+        long timestamp = System.currentTimeMillis();
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-            Date timestamp2;
-        try {
-            timestamp2 = dateFormat.parse("2024-03-04T23:11:11.757332100Z");
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-        System.out.println(timestamp2);
 
         while (true) {
-            String ts = timestamp.toString() + "Z";
             System.out.println("Timestamp now: " + timestamp);
 
-            Document testQuery = Document.parse("{q: [" +
-                    "{ $addFields: { timestamp: { $dateFromString: {dateString: \"$Hora\" } } } }," +
-                    "{ $match: { timestamp: { $gte: ISODate('2024-03-04T23:11:11.757332100Z') } } }," +
-                    "{ $project: {_id: 1, Timestamp: \"$timestamp\", SalaDestino: 1, SalaOrigem: 1 } }" +
+            Document movsQuery = Document.parse("{q: [" +
+                    "{ $addFields: { timestamp: { $toLong: { $dateFromString: { dateString: \"$Hora\" } } } } }," +
+                    "{ $match: { timestamp: { $gte: " + timestamp + " } } }," +
+                    "{ $project: {_id: 1, Timestamp: \"$timestamp\", SalaDestino: 1, SalaOrigem: 1, Hora: 1 } }" +
                     "]}"
             );
 
-            List<Document> aggregateQuery = new ArrayList<>();
-            aggregateQuery.add(Document.parse("{ $addFields: { timestamp: { $dateFromString: {dateString: \"$Hora\" } } } }"));
-            aggregateQuery.add(Document.parse("{ $match: { timestamp: { $gte: ISODate('2024-03-04T23:11:11.757332100Z') } } }"));
-            aggregateQuery.add(Document.parse("{ $project: {_id: 1, Timestamp: \"$timestamp\", SalaDestino: 1, SalaOrigem: 1 } }"));
+            cursor = movsCollection.aggregate((List<? extends Bson>) movsQuery.get("q")).iterator();
 
-            List<Bson> aggregateQuery2 = new ArrayList<>();
-            aggregateQuery2.add(Document.parse("{ $addFields: { timestamp: { $dateFromString: {dateString: \"$Hora\" } } } }"));
-            aggregateQuery2.add(Aggregates.match(Filters.gte("timestamp", "2024-03-04T23:11:11.757332100Z")));
-            aggregateQuery2.add(Document.parse("{ $project: {_id: 1, Timestamp: \"$timestamp\", SalaDestino: 1, SalaOrigem: 1 } }"));
-
-            AggregateIterable<Document> result = movsCollection.aggregate(aggregateQuery);
-            // MongoCursor<Document> cursor2 = movsCollection.find().iterator();
-            for (Document doc : result) {
-                System.out.println(doc.toJson());
-            }
             Document doc = null;
             while (cursor.hasNext()) {
-                Document doc2 = cursor.next();
-                System.out.println(doc2);
+                doc = cursor.next();
+                System.out.println(doc);
             }
             if (doc != null) {
-                timestamp = LocalDateTime.parse(doc.get("Timestamp").toString());
+                timestamp = System.currentTimeMillis();
             }
-            
+
+            System.out.println("\n--- Sleeping 5 seconds... ---");
             Thread.sleep(5000);
         }
         //        String doc = new String();
