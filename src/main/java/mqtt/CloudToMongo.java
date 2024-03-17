@@ -127,6 +127,7 @@ public class CloudToMongo  implements MqttCallback {
             }
             mongocol.insert(document_json);
             documentLabel.append(c.toString() + "\n");
+            documentLabel.setCaretPosition(documentLabel.getDocument().getLength());
             
         } catch (Exception e) {
             System.out.println(e);

@@ -16,6 +16,7 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 
 public class WriteSensorsToSQL {
@@ -68,7 +69,7 @@ public class WriteSensorsToSQL {
                 while (movsCursor.hasNext()) {
                     doc = movsCursor.next();
                     System.out.println(doc);
-                    persistMov(doc, movsTimestamp, 1);
+                    persistMov(doc, System.currentTimeMillis(), 1);
                 }
                 if (doc != null) {
                     movsTimestamp = System.currentTimeMillis();
@@ -122,7 +123,7 @@ public class WriteSensorsToSQL {
                 while (tempsCursor.hasNext()) {
                     doc = tempsCursor.next();
                     System.out.println(doc);
-                    persistTemp(doc, tempsTimestamp, 1);
+                    persistTemp(doc, System.currentTimeMillis(), 1);
                 }
                 if (doc != null) {
                     tempsTimestamp = System.currentTimeMillis();
@@ -139,13 +140,13 @@ public class WriteSensorsToSQL {
     }
 
     public void persistTemp(Document doc, long timestamp, long experiencia) {
-        int leitura = doc.getInteger("Leitura");
+        double leitura = doc.getDouble("Leitura");
         int sensor = doc.getInteger("Sensor");
         LocalDateTime hora = LocalDateTime.parse(doc.getString("Hora").replace(" ", "T"));
 
-        String sqlQuery = String.format("" +
+        String sqlQuery = String.format(Locale.US, "" +
                         "INSERT INTO medicoestemperatura(IDExperiencia, Leitura, Sensor, Hora, TimestampRegisto)\n" +
-                        "VALUES (%d, %d, %d, '%s', FROM_UNIXTIME(%d / 1000))",
+                        "VALUES (%d, %f, %d, '%s', FROM_UNIXTIME(%d / 1000))",
                 experiencia, leitura, sensor, hora, timestamp
         );
         try {
@@ -208,18 +209,12 @@ public class WriteSensorsToSQL {
     }
 
     public static void main(String[] args) throws MalformedURLException {
-        new WriteSensorsToSQL().tests();
-        // new WriteSensorsToSQL().run();
+//        new WriteSensorsToSQL().tests();
+         new WriteSensorsToSQL().run();
     }
 
     public void tests() throws MalformedURLException {
-        URL url = new URL("https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csve");
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-            System.out.println("Valid!");
-        } catch (IOException e) {
-            System.out.println("Invalid File!!!");
-        }
+
     }
 
 }
