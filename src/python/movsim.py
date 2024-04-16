@@ -94,9 +94,9 @@ def on_button_click(data):
     a = data['salaa']
     b = data['salab']
     
-    if adjacency_mask[a][b] == 1:
-        room_mouses[b - 1] += 1
-        room_mouses[a - 1] -= 1
+    if adjacency_mask[a - 1][b - 1] == 1:
+        room_mouses[b] += 1
+        room_mouses[a] -= 1
     
     for key in sorted(room_mouses.keys()):
         print(f"Mouses in {key}: {room_mouses[key]}")
