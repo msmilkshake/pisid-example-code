@@ -4,7 +4,6 @@ import time
 from datetime import datetime
 import random
 import threading
-from queue import Queue
 from tkinter import Tk, Label, Entry, Button
 
 
@@ -53,29 +52,6 @@ def run_mqtt():
         return temp + ((rampage_value + random.uniform(-rampage_variation, rampage_value)) * direction)
 
     while True:
-        # Quicly type -1, 1, -2, 2 + ENTER to trigger Rampage
-        # if not input_queue.empty():
-        #     command = input_queue.get()
-        #     if command == "-1":
-        #         sensor1_rampage = True
-        #         sensor1_rampage_direction = -1
-        #         print(f"    ###    Sensor 1 entered rampage state. Temperature will "
-        #               f"{'rise' if sensor1_rampage_direction > 0 else 'fall'} quickly.")
-        #     if command == "1":
-        #         sensor1_rampage = True
-        #         sensor1_rampage_direction = 1
-        #         print(f"    ###    Sensor 1 entered rampage state. Temperature will "
-        #               f"{'rise' if sensor1_rampage_direction > 0 else 'fall'} quickly.")
-        #     if command == "-2":
-        #         sensor2_rampage = True
-        #         sensor2_rampage_direction = -1
-        #         print(f"    ###    Sensor 2 entered rampage state. Temperature will "
-        #               f"{'rise' if sensor1_rampage_direction > 0 else 'fall'} quickly.")
-        #     if command == "2":
-        #         sensor2_rampage = True
-        #         sensor2_rampage_direction = 1
-        #         print(f"    ###    Sensor 2 entered rampage state. Temperature will "
-        #               f"{'rise' if sensor1_rampage_direction > 0 else 'fall'} quickly.")
 
         if sensor1_rampage:
             output_temp1 = rampage_scenario(output_temp1, sensor1_rampage_direction)
@@ -124,7 +100,7 @@ def run_mqtt():
         try:
             mensagem = f"{{Hora: '{str(datetime.now())}', Leitura: {temp1:.2f}, Sensor: 1}}"
             print("Generated message Sensor 1:", mensagem)
-            clientMqttMovements.publish(topic, mensagem, qos=0)
+            clientMqttMovements.publish(topic, mensagem, qos=2)
             clientMqttMovements.loop()
             mensagem = f"{{Hora: '{str(datetime.now())}', Leitura: {temp2:.2f}, Sensor: 2}}"
             print("Generated message Sensor 2:", mensagem)
