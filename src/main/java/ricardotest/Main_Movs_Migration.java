@@ -20,6 +20,9 @@ public class Main_Movs_Migration extends Sensor {
         // Definir a query ao mongo a fazer aqui, deverá ser do instante de tempo
         // Mas como por exemplo fazemos uma query com instante de agora???
         // Nunca vamos receber TimeStamps fora porque a query não retorna
+
+
+        // Timestamp no mongo de quando foi introduzido o registo
         query = Document.parse("{ SalaDestino: { $ne: null } }");
 
         cursor = collection.find(query).iterator();

@@ -9,6 +9,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import com.mongodb.*;
 import com.mongodb.util.JSON;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Vector;
 import java.io.File;
@@ -117,9 +118,14 @@ public class CloudToMongo  implements MqttCallback {
     public void messageArrived(String topic, MqttMessage c)
             throws Exception {
         try {
-            
+
             DBObject document_json;
             document_json = (DBObject) JSON.parse(c.toString());
+
+            // Add the actual timestamp to every record to check if there are records with wrong timestamp
+            document_json.put("Timestamp", LocalDateTime.now().toString());
+
+            System.out.println("Record with timestamp" + document_json);
             if (topic.equals(cloud_temp_topic)) {
                 mongocol = db.getCollection(mongo_temp_collection);
             } else if (topic.equals(cloud_mov_topic)) {

@@ -62,10 +62,10 @@ public class Main_Temps_Migration extends Sensor {
         double limiteSuperior = tempMin + 0.9 * intervalo;
 
         if (tempAtual <= limiteInferior) {
-            // Lançar ALERTA???
+            // Lançar ALERTA??? ou função WriteMySQL???
             System.out.println("Temperatura próxima do limite inferior");
         } else if (tempAtual >= limiteSuperior) {
-            // Lançar ALERTA???
+            // Lançar ALERTA??? ou função WriteMySQL???
             System.out.println("Temperatura próxima do limite superior");
         }
     }
@@ -78,14 +78,16 @@ public class Main_Temps_Migration extends Sensor {
         double tempMax = 0;
 
         if (tempAtual <= tempMin) {
-            // Lançar ALERTA???
+            // Lançar ALERTA??? ou função WriteMySQL???
             System.out.println("Temperatura atingiu limite inferior");
         } else if (tempAtual >= tempMax) {
-            // Lançar ALERTA???
+            // Lançar ALERTA??? ou função WriteMySQL???
             System.out.println("Temperatura atingiu limite superior");
         }
 
     }
+
+
 
 
 }

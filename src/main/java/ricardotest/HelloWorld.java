@@ -1,28 +1,15 @@
 package ricardotest;
 
-import com.google.gson.JsonObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Projections;
-import org.bson.BsonArray;
-import org.bson.BsonDocument;
-import org.bson.BsonValue;
 import org.bson.Document;
-import org.bson.conversions.Bson;
+
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
+
 
 public class HelloWorld {
 
@@ -52,7 +39,7 @@ public class HelloWorld {
         System.out.println(dateTimeFormatter.format(now));
 
         // Iterate over the results
-        if (cursor.hasNext()) {
+        while (cursor.hasNext()) {
             Document doc = cursor.next();
 
             System.out.println(doc.toJson());
@@ -60,6 +47,8 @@ public class HelloWorld {
             System.out.println(doc.get("Hora").getClass());
             System.out.println(doc.get("SalaOrigem").getClass());
             System.out.println(doc.get("SalaDestino"));
+            System.out.println(doc.get("Timestamp"));
+
         }
 
         /*
