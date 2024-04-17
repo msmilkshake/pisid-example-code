@@ -57,7 +57,7 @@ public class WriteSensorsToSQL {
                 System.out.println("[" + Thread.currentThread().getName() + "]Timestamp now: " + movsTimestamp);
 
                 Document movsQuery = Document.parse("{q: [" +
-                        "{ $addFields: { timestamp: { $toLong: { $dateFromString: { dateString: \"$Hora\" } } } } }," +
+                        "{ $addFields: { LongHora: { $toLong: { $dateFromString: { dateString: \"$Hora\" } } } } }," +
                         "{ $match: { timestamp: { $gte: " + movsTimestamp + " } } }," +
                         "{ $project: {_id: 1, Timestamp: \"$timestamp\", SalaDestino: 1, SalaOrigem: 1, Hora: 1 } }" +
                         "]}"

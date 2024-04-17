@@ -123,7 +123,7 @@ public class CloudToMongo  implements MqttCallback {
             document_json = (DBObject) JSON.parse(c.toString());
 
             // Add the actual timestamp to every record to check if there are records with wrong timestamp
-            document_json.put("Timestamp", LocalDateTime.now().toString());
+            document_json.put("Timestamp", System.currentTimeMillis());
 
             System.out.println("Record with timestamp" + document_json);
             if (topic.equals(cloud_temp_topic)) {
