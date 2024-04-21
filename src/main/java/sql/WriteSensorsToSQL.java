@@ -1,9 +1,11 @@
 package sql;
 
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -15,6 +17,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -53,6 +56,10 @@ public class WriteSensorsToSQL {
 
     public Thread createMovsThread() {
         return new Thread(() -> {
+
+            // TODO Ler topologia da DB e criar adjacêncais
+
+
             while (true) {
                 System.out.println("[" + Thread.currentThread().getName() + "]Timestamp now: " + movsTimestamp);
 
@@ -63,11 +70,16 @@ public class WriteSensorsToSQL {
                         "]}"
                 );
 
-                movsCursor = movsCollection.aggregate((List<? extends Bson>) movsQuery.get("q")).iterator();
+//                movsCursor = movsCollection.aggregate((List<? extends Bson>) movsQuery.get("q")).iterator();
 
+                String testQ = "{ Timestamp: { $gte: " + movsTimestamp + " } }";
+                System.out.println("Current query: " + testQ);
+                FindIterable<Document> results = movsCollection.find(BsonDocument.parse(testQ));
                 Document doc = null;
-                while (movsCursor.hasNext()) {
-                    doc = movsCursor.next();
+                Iterator<Document> it = results.iterator();
+                while (it.hasNext()) {
+                    // TODO Validar passagem e atualizar hashmap #ratos
+                    doc = it.next();
                     System.out.println(doc);
                     persistMov(doc, System.currentTimeMillis(), 1);
                 }

@@ -125,6 +125,7 @@ public class CloudToMongo  implements MqttCallback {
             } else if (topic.equals(cloud_mov_topic)) {
                 mongocol = db.getCollection(mongo_mov_collection);
             }
+            document_json.put("Timestamp", System.currentTimeMillis());
             mongocol.insert(document_json);
             documentLabel.append(c.toString() + "\n");
             documentLabel.setCaretPosition(documentLabel.getDocument().getLength());
