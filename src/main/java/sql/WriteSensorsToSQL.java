@@ -17,10 +17,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.time.LocalDateTime;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Properties;
+import java.util.*;
 
 public class WriteSensorsToSQL {
 
@@ -43,6 +40,7 @@ public class WriteSensorsToSQL {
     MongoCursor<Document> movsCursor;
     MongoCursor<Document> tempsCursor;
 
+
     int movsFrequency = 1; // 1 seconds
     int tempsFrequency = 3; // 3 seconds
 
@@ -57,11 +55,19 @@ public class WriteSensorsToSQL {
     public Thread createMovsThread() {
         return new Thread(() -> {
 
-            // TODO Ler topologia da DB e criar adjacêncais
-
+            int[][] topology = new ConnectToMysql().getTopology(); // get labyrinth topology from relational
+            HashMap<Integer, Integer> rooms_population = new HashMap<>();
+            rooms_population.put(1, 20); // 20 mouses on room 1 at startup
+            for (int i = 2 ; i <= 10; i++) { // remaining 9 rooms with 0 mouses
+                rooms_population.put(i, 0);
+            }
+            System.out.println(rooms_population);
+//            System.out.println(topology[1][1] == 1);
+//            System.out.println(topology[1][2] == 1);
+//            ConnectToMysql.show_matrix(topology);
 
             while (true) {
-                System.out.println("[" + Thread.currentThread().getName() + "]Timestamp now: " + movsTimestamp);
+//                System.out.println("[" + Thread.currentThread().getName() + "]Timestamp now: " + movsTimestamp); // REINSTATE
 
                 Document movsQuery = Document.parse("{q: [" +
                         "{ $addFields: { timestamp: { $toLong: { $dateFromString: { dateString: \"$Hora\" } } } } }," +
@@ -73,21 +79,29 @@ public class WriteSensorsToSQL {
 //                movsCursor = movsCollection.aggregate((List<? extends Bson>) movsQuery.get("q")).iterator();
 
                 String testQ = "{ Timestamp: { $gte: " + movsTimestamp + " } }";
-                System.out.println("Current query: " + testQ);
+//                System.out.println("Current query: " + testQ); // REINSTATE
                 FindIterable<Document> results = movsCollection.find(BsonDocument.parse(testQ));
                 Document doc = null;
                 Iterator<Document> it = results.iterator();
                 while (it.hasNext()) {
                     // TODO Validar passagem e atualizar hashmap #ratos
                     doc = it.next();
-                    System.out.println(doc);
+//                    System.out.println(doc);
+                    int from_room = (Integer) doc.get("SalaOrigem");
+                    int to_room = (Integer) doc.get("SalaDestino");
+                    // does not work with empty rooms and rooms must have a valid connection
+                    if (rooms_population.get(from_room) > 0 && topology[from_room][to_room] == 1) {
+                        rooms_population.put(to_room, rooms_population.get(to_room) + 1);
+                        rooms_population.put(from_room, rooms_population.get(from_room) - 1);
+                    }
+                    System.out.println(rooms_population);
                     persistMov(doc, System.currentTimeMillis(), 1);
                 }
                 if (doc != null) {
                     movsTimestamp = System.currentTimeMillis();
                 }
 
-                System.out.println("--- Sleeping " + (movsFrequency / 1000) + " seconds... ---\n");
+//                System.out.println("--- Sleeping " + (movsFrequency / 1000) + " seconds... ---\n"); // REINSTATE
                 try {
                     Thread.sleep(movsFrequency);
                 } catch (InterruptedException e) {
@@ -120,7 +134,7 @@ public class WriteSensorsToSQL {
     public Thread createTempsThread() {
         return new Thread(() -> {
             while (true) {
-                System.out.println("[" + Thread.currentThread().getName() + "]Timestamp now: " + tempsTimestamp);
+//                System.out.println("[" + Thread.currentThread().getName() + "]Timestamp now: " + tempsTimestamp); // REINSTATE
 
                 Document tempsQuery = Document.parse("{q: [" +
                         "{ $addFields: { timestamp: { $toLong: { $dateFromString: { dateString: \"$Hora\" } } } } }," +
@@ -141,7 +155,7 @@ public class WriteSensorsToSQL {
                     tempsTimestamp = System.currentTimeMillis();
                 }
 
-                System.out.println("--- Sleeping " + (tempsFrequency / 1000) + " seconds... ---\n");
+//                System.out.println("--- Sleeping " + (tempsFrequency / 1000) + " seconds... ---\n"); //REINSTATE
                 try {
                     Thread.sleep(tempsFrequency);
                 } catch (InterruptedException e) {

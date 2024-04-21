@@ -89,7 +89,7 @@ clientMqttMovements.connect(host, port)
 
 
 def on_button_click(data):
-    json_string = json.dumps(data, indent=4)
+    # json_string = json.dumps(data, indent=4)
     # print(f'Button clicked. JSON object: \n{json_string}')
     a = data['salaa']
     b = data['salab']
